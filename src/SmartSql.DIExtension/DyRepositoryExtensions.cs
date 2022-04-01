@@ -169,13 +169,47 @@ namespace Microsoft.Extensions.DependencyInjection
             StringBuilder sb = new StringBuilder();
             var sType = typeof(T1);
 
+            var properties = sType.GetProperties();
+
+            StringBuilder colNameBuilder = new StringBuilder();
+            foreach (var property in properties)
+            {
+                string colName = property.Name;
+                var colAttr = property.GetCustomAttribute<ColumnAttribute>();
+                if (colAttr != null)
+                {
+                    colName = colAttr.Name;
+                    if (colAttr.IsPrimaryKey && colAttr.IsAutoIncrement)
+                    {
+                        continue;
+                    }
+                }
+
+                colNameBuilder.Append($"{colName},");
+            }
+
+            string colNames = $" ({colNameBuilder.ToString().TrimEnd(',')}) ";
+
+            sb.Append($" {colNames} values ");
+
             StringBuilder colValsBuilder = new StringBuilder();
-            StringBuilder colValBuilder = new StringBuilder();
+
 
             foreach (var data in list)
             {
-                foreach (var property in sType.GetProperties())
+                StringBuilder colValBuilder = new StringBuilder();
+                foreach (var property in properties)
                 {
+                    var colAttr = property.GetCustomAttribute<ColumnAttribute>();
+                    if (colAttr != null)
+                    {
+                        if (colAttr.IsPrimaryKey && colAttr.IsAutoIncrement)
+                        {
+                            continue;
+                        }
+                    }
+
+
                     object val = property.GetValue(data);
                     if (val == null)
                     {
@@ -198,6 +232,7 @@ namespace Microsoft.Extensions.DependencyInjection
                         {
                             val = val.ToString().Replace("'", "''");
                         }
+
                         colValBuilder.Append($"'{val}',");
                     }
                 }
