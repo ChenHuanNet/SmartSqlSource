@@ -36,7 +36,11 @@ namespace SmartSql.Middlewares
             BuildDbParameters(executionContext.Request);
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                _logger.LogDebug(executionContext.FormatSql(true));
+                string sql = executionContext.FormatSql(true);
+                if (sql.Length <= 5000)
+                    _logger.LogDebug(sql);
+                else
+                    _logger.LogDebug(sql.Substring(0, 5000) + "......It is not displayed because there are too many");
             }
         }
 
