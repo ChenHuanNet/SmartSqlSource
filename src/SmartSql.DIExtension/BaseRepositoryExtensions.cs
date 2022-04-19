@@ -36,7 +36,7 @@ namespace SmartSql.DIExtension
         /// <typeparam name="TModel"></typeparam>
         /// <typeparam name="TRepository"></typeparam>
         /// <returns></returns>
-        public static List<TModel> FindFirst<TModel, TRepository>(this TRepository repository,
+        public static TModel FindFirst<TModel, TRepository>(this TRepository repository,
             Expression<Func<TModel, bool>> expression) where TRepository : IRepository
         {
             string sql = ExpressionToSqlBuilder<TModel, TRepository>.Build(expression, repository, 1);
@@ -44,7 +44,7 @@ namespace SmartSql.DIExtension
             {
                 RealSql = sql
             };
-            return repository.SqlMapper.Query<TModel>(context).ToList();
+            return repository.SqlMapper.Query<TModel>(context).FirstOrDefault();
         }
 
         #endregion
