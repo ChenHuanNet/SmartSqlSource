@@ -4,7 +4,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using SmartSql.Annotations;
+using SmartSql.Data;
 using SmartSql.DyRepository;
 using SmartSql.Utils;
 
@@ -12,6 +14,42 @@ namespace SmartSql.DIExtension
 {
     public static class BaseRepositoryExtensions
     {
+        #region 单表Linq查询
+
+        public static List<TModel> Find<TModel, TRepository>(this TRepository repository,
+            Expression<Func<TModel, bool>> expression) where TRepository : IRepository
+        {
+            string sql = ExpressionToSqlBuilder<TModel, TRepository>.Build(expression, repository, 0);
+            var context = new RequestContext()
+            {
+                RealSql = sql
+            };
+            return repository.SqlMapper.Query<TModel>(context).ToList();
+        }
+
+
+        /// <summary>
+        /// 暂时仅支持 Sqlserver 和MySql 
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="expression"></param>
+        /// <typeparam name="TModel"></typeparam>
+        /// <typeparam name="TRepository"></typeparam>
+        /// <returns></returns>
+        public static List<TModel> FindFirst<TModel, TRepository>(this TRepository repository,
+            Expression<Func<TModel, bool>> expression) where TRepository : IRepository
+        {
+            string sql = ExpressionToSqlBuilder<TModel, TRepository>.Build(expression, repository, 1);
+            var context = new RequestContext()
+            {
+                RealSql = sql
+            };
+            return repository.SqlMapper.Query<TModel>(context).ToList();
+        }
+
+        #endregion
+
+
         #region 批量插入
 
         /// <summary>
@@ -233,7 +271,7 @@ namespace SmartSql.DIExtension
                 foreach (var property in properties)
                 {
                     var colName = property.Name;
-                    var colAttr = (ColumnAttribute) property.GetCustomAttribute(typeof(ColumnAttribute));
+                    var colAttr = (ColumnAttribute)property.GetCustomAttribute(typeof(ColumnAttribute));
                     if (colAttr != null && !string.IsNullOrWhiteSpace(colAttr.Name))
                     {
                         colName = colAttr.Name ?? colName;
