@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using ServiceStack;
 
-
 namespace SmartSql.DIExtension
 {
     public class ExpressionAnalyzer : ExpressionVisitor
@@ -399,7 +398,21 @@ namespace SmartSql.DIExtension
                         //存储
                         ResultData.ParamList.Add(paramName, _params.ContainsKey(paramName) ? _params[paramName] : null);
                         //存储
-                        ResultData.StackList.Add(paramName);
+                        object data = Expression.Lambda(exp).Compile().DynamicInvoke();
+                        string val = data.ToString();
+                        if (data.GetType() == typeof(DateTime))
+                        {
+                            val = $"'{val}'";
+                        }
+                        else if (data.GetType().IsValueType)
+                        {
+                        }
+                        else
+                        {
+                            val = $"'{val}'";
+                        }
+
+                        ResultData.StackList.Add(val);
                     }
 
                     //中止

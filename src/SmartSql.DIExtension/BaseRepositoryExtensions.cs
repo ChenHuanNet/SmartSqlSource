@@ -16,10 +16,10 @@ namespace SmartSql.DIExtension
     {
         #region 单表Linq查询
 
-        public static List<TModel> Find<TModel, TRepository>(this TRepository repository,
-            Expression<Func<TModel, bool>> expression) where TRepository : IRepository
+        public static List<TModel> Find<TModel>(this IRepository<TModel> repository,
+            Expression<Func<TModel, bool>> expression)
         {
-            string sql = ExpressionToSqlBuilder<TModel, TRepository>.Build(expression, repository, 0);
+            string sql = ExpressionToSqlBuilder<TModel>.Build(expression, repository, 0);
             var context = new RequestContext()
             {
                 RealSql = sql
@@ -36,10 +36,10 @@ namespace SmartSql.DIExtension
         /// <typeparam name="TModel"></typeparam>
         /// <typeparam name="TRepository"></typeparam>
         /// <returns></returns>
-        public static TModel FindFirst<TModel, TRepository>(this TRepository repository,
-            Expression<Func<TModel, bool>> expression) where TRepository : IRepository
+        public static TModel FindFirst<TModel>(this IRepository<TModel> repository,
+            Expression<Func<TModel, bool>> expression)
         {
-            string sql = ExpressionToSqlBuilder<TModel, TRepository>.Build(expression, repository, 1);
+            string sql = ExpressionToSqlBuilder<TModel>.Build(expression, repository, 1);
             var context = new RequestContext()
             {
                 RealSql = sql

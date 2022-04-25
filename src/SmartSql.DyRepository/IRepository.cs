@@ -10,6 +10,16 @@ namespace SmartSql.DyRepository
     {
         ISqlMapper SqlMapper { get; }
     }
+
+    /// <summary>
+    /// 用于写lamda用的
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    public interface IRepository<TEntity> : IRepository
+    {
+    }
+
+
     /// <summary>
     /// 泛型仓储接口
     /// </summary>

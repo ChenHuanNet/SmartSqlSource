@@ -9,9 +9,9 @@ using SmartSql.DyRepository;
 
 namespace SmartSql.DIExtension
 {
-    public class ExpressionToSqlBuilder<T, TRepository> where TRepository : IRepository
+    public class ExpressionToSqlBuilder<T>
     {
-        public static string Build(Expression<Func<T, bool>> expression, TRepository repository, int topNum)
+        public static string Build(Expression<Func<T, bool>> expression, IRepository<T> repository, int topNum)
         {
             var result = new ExpressionAnalyzer();
             //解析
@@ -45,7 +45,7 @@ namespace SmartSql.DIExtension
             {
                 sb.Append(whereClip.Replace($"[{result.TableAlias}]", result.TableAlias) + " ");
             }
-            
+
             if (topNum > 0)
             {
                 if (repository.SqlMapper.SmartSqlConfig.Database.DbProvider.Name == DbProvider.MYSQL)
@@ -55,7 +55,7 @@ namespace SmartSql.DIExtension
             }
 
             string sql = sb.ToString();
-            
+
 
             return sql;
         }
