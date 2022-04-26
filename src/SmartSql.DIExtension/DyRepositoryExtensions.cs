@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using SmartSql.Annotations;
 using SmartSql.Exceptions;
 using SmartSql.Utils;
@@ -122,9 +123,14 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static T GetRepository<T>(this IServiceProvider sp, string alias) where T : IRepository
         {
-            var sqlMapper = sp.GetSqlMapper(alias);
+            var sqlMapper = sp.GetSmartSqlBuilder(alias)?.SqlMapper;
+            if (sqlMapper == null)
+            {
+                throw new Exception($"没有找到相关的 {alias} 的SmartSql配置");
+            }
+
             var factory = sp.GetRequiredService<IRepositoryFactory>();
-            var data = (T) factory.CreateInstance(typeof(T), sqlMapper);
+            var data = (T)factory.CreateInstance(typeof(T), sqlMapper);
             return data;
         }
     }

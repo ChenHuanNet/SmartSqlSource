@@ -16,6 +16,8 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class SmartSqlDIExtensions
     {
+        public static Dictionary<string, SmartSqlBuilder> CacheSmartSqlBuilders = new Dictionary<string, SmartSqlBuilder>();
+
         public static SmartSqlDIBuilder AddSmartSql(this IServiceCollection services,
             Func<IServiceProvider, SmartSqlBuilder> setup)
         {
@@ -107,8 +109,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 connectionStrings.Add("appsetting:SmarSqlOption:DbProvider", item.DbProvider);
                 services.AddSmartSql(builder =>
                 {
-                    builder.UseAlias(item.Alias).UseProperties(connectionStrings)
+                    var smartSqlBuilder = builder.UseAlias(item.Alias).UseProperties(connectionStrings)
                         .UseXmlConfig(ResourceType.File, item.ConfigPath);
+                    if (!CacheSmartSqlBuilders.ContainsKey(item.Alias))
+                        CacheSmartSqlBuilders.Add(item.Alias, smartSqlBuilder);
                 }).AddRepositoryFromAssembly(options =>
                 {
                     options.SmartSqlAlias = item.Alias;
@@ -119,6 +123,17 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             return services;
+        }
+
+
+        public static SmartSqlBuilder GetSmartSqlBuilder(this IServiceProvider sp, string alias)
+        {
+            if (CacheSmartSqlBuilders.ContainsKey(alias))
+            {
+                return CacheSmartSqlBuilders[alias];
+            }
+
+            return null;
         }
     }
 }
